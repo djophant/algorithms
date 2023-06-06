@@ -37,6 +37,34 @@ class MarkovChainMonteCarlo:
         
         return pi_estimate + std_error_estimate, pi_estimate - std_error_estimate
 
+    def binomial_tree(self, mu, sigma, S_0, N, T, step):
+        """binomial tree model for option pricing
+
+        Parameters:
+        ----------
+            mu (float): expected return or drift of the underlying asset's price
+            sigma (float): volatility of the underlying asset's price
+            S_0 (float): initial price of the underlying asset
+            N (int): number of time steps or periods of the binomial tree
+            T (int): total time or maturity of the option in years
+            step (float): the size of each time step or period
+            
+        Returns:
+        -------
+            S_T (float): the estimated price of the option 
+        """
+        ratio = np.sqrt(T/N)
+        ratio_step = T/step
+        # up price
+        u = np.exp(sigma * ratio)
+        # Down price 
+        d = 1/u 
+        p = 0.5 + 0.5 * (mu/sigma) * ratio
+        up_times = np.random.binomial(ratio_step, p, N)
+        down_times = ratio_step - up_times
+        S_T = S_0 * np.power(u, up_times) * np.power(d, down_times)
+
+        return S_T
 
             
 if __name__ == "__main__":
