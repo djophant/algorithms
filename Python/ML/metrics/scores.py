@@ -185,10 +185,75 @@ class AccuracyScore:
         return self.total_num_corect_predict / self.num_samples
 
 
+class ConfusionMatrix:
+    """
+    This class compute a 2 x 2 Confusion matrix for binary classification.
+                            | TN  FP|
+                            | FN  TP|
+    Attributes:
+        y_true (np.ndarray): the real target 
+        y_pred (np.ndarray): the predicted target base on a model.
+        matrix (np.ndarray): TODO
+        true_positive (int): number of reals values 1 that is predicted as 1.
+        true_negative (int): number of reals values 0 that is predicted as O.
+        false_positive (int): number of reals values 0 that is predicted as 1.
+        false_negative (int): number of reals values 1 that is predicted as 0.
+    Methods:
+        update(y_true, y_pred)
+            update the matrix with TP, FP, TN, FN
+        compute (np.ndarray):
+            update the confusion matrux with tp, fp, tn, fn.
+        reset():
+            Reset the matrix by 2 x 2 sero matrix.        
+    """
+
+    def __init__(self, y_true: np.ndarray, y_pred: np.ndarray):
+        if not isinstance(y_true, np.ndarray):
+            self.y_true = np.array(y_true)
+        if not isinstance(y_pred, np.ndarray):
+            self.y_pred = np.array(y_pred)
+        self.y_true = y_true
+        self.y_pred = y_pred
+        self.true_positive = 0
+        self.true_negative = 0
+        self.false_positive = 0
+        self.false_negative = 0
+        self.matrix = np.zeros((2, 2))
+
+    def update(self) -> None:
+        """
+        This method update all the false and true positive 
+        """
+        self.true_positive += np.sum((self.y_pred == 1) & (self.y_true == 1))
+        self.true_negative += np.sum((self.y_pred == 0) & (self.y_true == 0))
+        self.false_positive += np.sum((self.y_pred == 1) & (self.y_true == 0))
+        self.false_negative += np.sum((self.y_pred == 0) & (self.y_true == 1))
+
+    def compute(self) -> np.ndarray:
+        """
+        This function compute the confusion matrix
+        Return:
+            2 x 2 np.ndarray
+        """
+        self.matrix[0][0] = self.true_negative
+        self.matrix[0][1] = self.false_positive
+        self.matrix[1][0] = self.false_negative
+        self.matrix[1][1] = self.true_positive
+
+        return self.matrix
+
+    def reset(self) -> None:
+        """
+        Reset the matrix to get a zeros matrices
+        """
+        self.matrix = np.zeros((2, 2))
+
+
 if __name__ == "__main__":
     # test binary cross-entropy loss
     y_true = np.array([0, 0, 1, 0, 1])
     y_pred = np.array([0.4, 0.9, 0.8, 0.0, 1])
+    y_pred_bis = np.array([0, 1, 1, 1, 1])
     bce = BinaryCrossEntropy()
     bce(y_true, y_pred)
     loss = bce.compute()
@@ -205,3 +270,8 @@ if __name__ == "__main__":
     score = cce.compute()
     print(
         f"The accuracy score between y_true and y_pred are {score}\n")
+
+    confusion_matrix = ConfusionMatrix(y_true, y_pred_bis)
+    confusion_matrix.update()
+    conf_matrix = confusion_matrix.compute()
+    print(conf_matrix)
